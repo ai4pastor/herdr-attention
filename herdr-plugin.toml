@@ -1,0 +1,42 @@
+# herdr-attention — 에이전트 상태를 사이드바 색 표시로 (2026-11-06)
+# 빨강 █ 입력 필요 · 노랑 █ 확인 안 함 · 초록 ✓ 확인함 · 파랑 ◐ 작업 중
+# 표시 글자는 칸마다 토큰(att_red/att_yellow/att_green/att_blue, 분류값 att_state)으로 쓰고,
+# 색은 ~/.config/herdr/config.toml 의 [ui.sidebar.agents] 줄 구성이 입힌다.
+
+id = "herdr-attention"
+name = "herdr-attention"
+version = "0.1.0"
+description = "에이전트 상태를 사이드바 색 표시로: 입력 필요(빨강)·확인 안 함(노랑)·확인함(초록)·작업 중(파랑)"
+min_herdr_version = "0.9.0"
+platforms = ["macos"]
+
+# 서버가 켜질 때 전체 다시 맞추기 (끝남·들어가 봄 기억은 상태 파일에 남아 있다)
+[[startup]]
+command = ["./attention.py", "sync"]
+
+[[events]]
+on = "pane.agent_status_changed"
+command = ["./attention.py", "event"]
+
+# 칸·탭·작업공간을 옮겨 다니면 지금 보는 칸을 "들어가 봄"으로 친다
+[[events]]
+on = "pane.focused"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "tab.focused"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "workspace.focused"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "pane.closed"
+command = ["./attention.py", "event"]
+
+[[actions]]
+id = "sync"
+title = "색 표시 다시 맞추기"
+description = "모든 에이전트 칸의 색 표시를 지금 상태로 다시 쓴다"
+command = ["./attention.py", "sync"]
