@@ -13,8 +13,10 @@ herdr 자체의 done(안 봄)은 몇 초 만에 idle로 바뀌므로, 끝남·�
   attention.py event   herdr 이벤트 훅 (HERDR_PLUGIN_EVENT_JSON)
 """
 import fcntl
+import glob
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -64,15 +66,53 @@ def herdr(*args):
         return {}
 
 
-def agent_panes():
-    """에이전트가 있는 칸: {pane_id: (herdr 상태, 지금 보고 있는 칸인지)}"""
+def pane_list():
     d = herdr("pane", "list")
-    panes = ((d or {}).get("result") or {}).get("panes") or []
+    return ((d or {}).get("result") or {}).get("panes") or []
+
+
+def agent_panes(panes):
+    """에이전트가 있는 칸: {pane_id: (herdr 상태, 지금 보고 있는 칸인지)}"""
     return {
         p["pane_id"]: (p.get("agent_status") or "unknown", bool(p.get("focused")))
         for p in panes
         if p.get("agent")
     }
+
+
+def link_sessions(panes):
+    """세션 번호를 모르는 Claude 칸에, 실행 중인 Claude가 남긴 <계정 폴더>/sessions/<pid>.json의
+    세션 번호를 herdr에 알려 준다. herdr 연동 훅은 세션이 시작될 때만 보고해서, 훅을 깔기 전에
+    떠 있던 세션은 비어 있다(상황판 카드의 모델이 ?@?로 나오는 원인)."""
+    for p in panes:
+        if p.get("agent") != "claude" or p.get("agent_session"):
+            continue
+        pane = p["pane_id"]
+        info = (((herdr("pane", "process-info", "--pane", pane) or {}).get("result") or {})
+                .get("process_info") or {})
+        procs = info.get("foreground_processes") or []
+        lead = [x for x in procs if x.get("pid") == info.get("foreground_process_group_id")] or procs[:1]
+        pid = lead[0].get("pid") if lead else None
+        if not pid:
+            continue
+        env = subprocess.run(["ps", "eww", "-o", "command=", "-p", str(pid)],
+                             capture_output=True, text=True).stdout
+        m = re.search(r"CLAUDE_CONFIG_DIR=(\S+)", env)
+        cfg = os.path.expanduser(m.group(1)) if m else os.path.expanduser("~/.claude")
+        try:
+            with open(os.path.join(cfg, "sessions", f"{pid}.json"), encoding="utf-8") as f:
+                sid = json.load(f).get("sessionId")
+        except (OSError, ValueError):
+            continue
+        if not sid:
+            continue
+        args = ["pane", "report-agent-session", pane, "--source", "herdr:claude",
+                "--agent", "claude", "--agent-session-id", sid]
+        found = glob.glob(os.path.join(cfg, "projects", "*", f"{sid}.jsonl"))
+        if found:
+            args += ["--agent-session-path", found[0]]
+        herdr(*args)
+        log(f"{pane} 세션 번호 연결: {sid[:8]} ({os.path.basename(cfg)})")
 
 
 def category(prev, status, focused):
@@ -161,7 +201,10 @@ def main():
             save(data)
             return
 
-        panes = agent_panes()
+        listing = pane_list()
+        panes = agent_panes(listing)
+        if mode == "sync":
+            link_sessions(listing)
         if etype == "pane_agent_status_changed":
             targets = [str(find(event, "pane_id"))]
         elif mode == "event":  # 포커스가 바뀌는 이벤트: 지금 보고 있는 칸만

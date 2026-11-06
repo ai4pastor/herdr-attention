@@ -50,9 +50,10 @@ Claude Code에 맡기려면 이렇게 말하면 됩니다.
 - herdr 사이드바는 줄 배경을 칠하는 기능이 없어서 줄 맨 앞의 굵은 색 글자로 표시합니다.
 - 사이드바 순서는 herdr가 정합니다. 빨강은 맨 위로 올라오지만 노랑의 위치는 보장되지 않습니다.
 - 상태 판정(작업 중·입력 필요·끝남)은 herdr가 합니다. 정확도를 높이려면 herdr 연동 훅을 설치하세요: `herdr integration install claude` (Claude Code 계정을 여러 개 쓰면 계정마다 `CLAUDE_CONFIG_DIR=<계정 폴더>`를 앞에 붙여 실행).
+- **세션 번호 연결**: 연동 훅은 세션이 *시작될 때만* 보고해서, 훅을 깔기 전에 떠 있던 Claude 세션은 herdr가 세션 번호를 모릅니다(에이전트 상황판 카드에 모델이 `?@?`로 나옴). "다시 맞추기"를 하면 실행 중인 Claude가 남긴 `<계정 폴더>/sessions/<프로세스번호>.json`에서 세션 번호를 찾아 herdr에 알려 줍니다. 대화를 한 번도 안 한 새 세션은 기록이 없어서 첫 대화 뒤에 채워집니다.
 - 하는 일은 `herdr pane report-metadata`로 칸마다 표시 글자를 쓰는 것뿐입니다. 외부 통신은 없습니다.
 - 표시가 어긋나 보이면: `herdr plugin action invoke sync --plugin herdr-attention`
-- 기록: `~/.config/herdr/plugins/` 아래 이 플러그인의 상태 폴더에 `attention.log`가 남습니다.
+- 기록: `~/.local/state/herdr/plugins/herdr-attention/attention.log` (기억은 같은 폴더의 `state.json`)
 
 ## 지우기
 
