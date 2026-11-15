@@ -1,24 +1,33 @@
 # herdr-attention 사이드바 줄 구성 — ~/.config/herdr/config.toml 에 붙여 넣는다.
-# 이미 [ui.sidebar.agents] 나 [ui.sidebar.agents.rows_by_agent] 가 있으면 그 부분을 이것으로 바꾼다
+# 이미 [ui.sidebar.agents] · [ui.sidebar.agents.rows_by_agent] · [ui.sidebar.spaces] 가 있으면 그 부분을 이것으로 바꾼다
 # (같은 이름의 표가 두 번 있으면 herdr가 설정을 읽지 못한다).
-# 넣은 뒤: herdr config check → herdr server reload-config
+# 🚨 한 줄(대괄호 하나)에 토큰은 16개까지 — 넘으면 herdr가 설정 전체를 버리고 기본값으로 돌아간다. 아래는 13개·9개.
+# 넣은 뒤: herdr config check → herdr server reload-config → herdr plugin action invoke sync --plugin herdr-attention
 #
-# 줄 맨 앞의 큰 색 표시는 herdr-attention 플러그인이 칸마다 써 넣는다:
-# 빨강 █ 입력 필요 · 노랑 █ 확인 안 함 · 초록 ✓ 확인함 · 파랑 ◐ 작업 중
+# 줄 맨 앞의 큰 색 표시 = 상태: 빨강 █ 입력 필요 · 노랑 █ 확인 안 함 · 초록 ✓ 확인함 · 파랑 ◐ 작업 중
+# ● 공간 이름 = 공간 색: 주황 · 보라 · 파랑 · 분홍 · 남보라 · 황토 · 회색 (공간마다 하나, space-colors.toml)
+# 플러그인을 끄면 공간 이름도 사라지므로, 끌 때는 이 줄 구성도 함께 빼거나 백업으로 되돌린다.
 
 [ui.sidebar.agents]
 rows = [
-  [{ token = "$att_red", fg = "#ff453a", bold = true }, { token = "$att_yellow", fg = "#ffd60a", bold = true }, { token = "$att_green", fg = "#30d158" }, { token = "$att_blue", fg = "#64d2ff" }, "workspace", "tab"],
+  [{ token = "$att_red", fg = "#ff453a", bold = true }, { token = "$att_yellow", fg = "#ffd60a", bold = true }, { token = "$att_green", fg = "#30d158" }, { token = "$att_blue", fg = "#64d2ff" }, { token = "$spn_orange", fg = "#ff9f0a", bold = true }, { token = "$spn_purple", fg = "#bf5af2", bold = true }, { token = "$spn_blue", fg = "#409cff", bold = true }, { token = "$spn_pink", fg = "#ff6ac1", bold = true }, { token = "$spn_indigo", fg = "#8e8cff", bold = true }, { token = "$spn_tan", fg = "#d4a373", bold = true }, { token = "$spn_gray", fg = "#a1a1aa", bold = true }, { token = "$spn_none", bold = true }, "tab"],
   ["agent"],
 ]
 
 # 사이드바에 "claude" 대신 각 세션이 하는 일(대화 제목)이 보이게
 [ui.sidebar.agents.rows_by_agent]
 claude = [
-  [{ token = "$att_red", fg = "#ff453a", bold = true }, { token = "$att_yellow", fg = "#ffd60a", bold = true }, { token = "$att_green", fg = "#30d158" }, { token = "$att_blue", fg = "#64d2ff" }, "workspace", "tab"],
+  [{ token = "$att_red", fg = "#ff453a", bold = true }, { token = "$att_yellow", fg = "#ffd60a", bold = true }, { token = "$att_green", fg = "#30d158" }, { token = "$att_blue", fg = "#64d2ff" }, { token = "$spn_orange", fg = "#ff9f0a", bold = true }, { token = "$spn_purple", fg = "#bf5af2", bold = true }, { token = "$spn_blue", fg = "#409cff", bold = true }, { token = "$spn_pink", fg = "#ff6ac1", bold = true }, { token = "$spn_indigo", fg = "#8e8cff", bold = true }, { token = "$spn_tan", fg = "#d4a373", bold = true }, { token = "$spn_gray", fg = "#a1a1aa", bold = true }, { token = "$spn_none", bold = true }, "tab"],
   ["terminal_title_stripped"],
 ]
 codex = [
-  [{ token = "$att_red", fg = "#ff453a", bold = true }, { token = "$att_yellow", fg = "#ffd60a", bold = true }, { token = "$att_green", fg = "#30d158" }, { token = "$att_blue", fg = "#64d2ff" }, "workspace", "tab"],
+  [{ token = "$att_red", fg = "#ff453a", bold = true }, { token = "$att_yellow", fg = "#ffd60a", bold = true }, { token = "$att_green", fg = "#30d158" }, { token = "$att_blue", fg = "#64d2ff" }, { token = "$spn_orange", fg = "#ff9f0a", bold = true }, { token = "$spn_purple", fg = "#bf5af2", bold = true }, { token = "$spn_blue", fg = "#409cff", bold = true }, { token = "$spn_pink", fg = "#ff6ac1", bold = true }, { token = "$spn_indigo", fg = "#8e8cff", bold = true }, { token = "$spn_tan", fg = "#d4a373", bold = true }, { token = "$spn_gray", fg = "#a1a1aa", bold = true }, { token = "$spn_none", bold = true }, "tab"],
   ["terminal_title_stripped"],
+]
+
+# 공간 목록: 상태 기호 + ● 공간 이름(공간 색). 둘째 줄은 herdr 기본값(깃 브랜치·상태).
+[ui.sidebar.spaces]
+rows = [
+  ["state_icon", { token = "$spn_orange", fg = "#ff9f0a", bold = true }, { token = "$spn_purple", fg = "#bf5af2", bold = true }, { token = "$spn_blue", fg = "#409cff", bold = true }, { token = "$spn_pink", fg = "#ff6ac1", bold = true }, { token = "$spn_indigo", fg = "#8e8cff", bold = true }, { token = "$spn_tan", fg = "#d4a373", bold = true }, { token = "$spn_gray", fg = "#a1a1aa", bold = true }, { token = "$spn_none", bold = true }],
+  ["branch", "git_status"],
 ]

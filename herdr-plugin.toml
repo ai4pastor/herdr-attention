@@ -1,12 +1,12 @@
-# herdr-attention — 에이전트 상태를 사이드바 색 표시로 (2026-11-06)
-# 빨강 █ 입력 필요 · 노랑 █ 확인 안 함 · 초록 ✓ 확인함 · 파랑 ◐ 작업 중
-# 표시 글자는 칸마다 토큰(att_red/att_yellow/att_green/att_blue, 분류값 att_state)으로 쓰고,
-# 색은 ~/.config/herdr/config.toml 의 [ui.sidebar.agents] 줄 구성이 입힌다.
+# herdr-attention — 에이전트 상태와 공간을 사이드바 색 표시로 (2026-11-06, 공간 색 2026-11-15)
+# 상태: 빨강 █ 입력 필요 · 노랑 █ 확인 안 함 · 초록 ✓ 확인함 · 파랑 ◐ 작업 중 (토큰 att_red/yellow/green/blue, 분류값 att_state)
+# 공간 색: 공간 이름 글자와 ● 점에 공간마다 정한 색 (토큰 spn_<색>, 색 없음 spn_none, 분류값 space_color)
+# 색은 ~/.config/herdr/config.toml 의 사이드바 줄 구성(sidebar-rows.toml)이 입힌다.
 
 id = "herdr-attention"
 name = "herdr-attention"
-version = "0.1.1"
-description = "에이전트 상태를 사이드바 색 표시로: 입력 필요(빨강)·확인 안 함(노랑)·확인함(초록)·작업 중(파랑)"
+version = "0.2.0"
+description = "사이드바 색 표시: 에이전트 상태(입력 필요·확인 안 함·확인함·작업 중)와 공간별 색"
 min_herdr_version = "0.9.0"
 platforms = ["macos"]
 
@@ -35,8 +35,41 @@ command = ["./attention.py", "event"]
 on = "pane.closed"
 command = ["./attention.py", "event"]
 
+# 공간 색: 새 칸·칸/탭 이동·공간 생성/이름 변경/닫힘 때 색 글자를 맞춘다
+[[events]]
+on = "pane.created"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "pane.moved"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "pane.agent_detected"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "tab.created"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "tab.moved"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "workspace.created"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "workspace.renamed"
+command = ["./attention.py", "event"]
+
+[[events]]
+on = "workspace.closed"
+command = ["./attention.py", "event"]
+
 [[actions]]
 id = "sync"
 title = "색 표시 다시 맞추기"
-description = "모든 에이전트 칸의 색 표시를 지금 상태로 다시 쓴다"
+description = "모든 칸의 상태 색과 공간 색을 지금 상태로 다시 쓴다 (공간 색 파일을 고친 뒤에도)"
 command = ["./attention.py", "sync"]
